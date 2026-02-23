@@ -1,0 +1,50 @@
+# Logs
+*.log
+/var/log/apache2/
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# PHP
+/vendor/
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Cache and sessions
+/cache/
+/sessions/
+/tmp/
+
+# Configuration sensible (identifiants BDD)
+config/Database.php
+config/database.php
+
+# Fichiers de debug
+debug.php
+debug_backup.php
+
+# Fichiers sensibles
+cookies.txt
+
+# Backup files
+*.bak
+*.backup 

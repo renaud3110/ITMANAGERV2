@@ -1,0 +1,59 @@
+<?php
+
+/**
+ * Configuration de la base de données
+ * Copier ce fichier vers Database.php et renseigner vos paramètres
+ * cp config/Database.php.example config/Database.php
+ */
+class Database {
+    private $host = 'localhost';
+    private $dbname = 'itmanager';
+    private $username = 'votre_utilisateur';
+    private $password = 'votre_mot_de_passe';
+    private $pdo;
+    
+    public function __construct() {
+        try {
+            $this->pdo = new PDO(
+                "mysql:host={$this->host};dbname={$this->dbname};charset=utf8mb4",
+                $this->username,
+                $this->password,
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false
+                ]
+            );
+        } catch (PDOException $e) {
+            die("Erreur de connexion à la base de données: " . $e->getMessage());
+        }
+    }
+    
+    public function getConnection() {
+        return $this->pdo;
+    }
+    
+    public function query($sql, $params = []) {
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
+            return $stmt;
+        } catch (PDOException $e) {
+            error_log("Erreur SQL: " . $e->getMessage() . " - Query: " . $sql);
+            throw $e;
+        }
+    }
+    
+    public function fetch($sql, $params = []) {
+        return $this->query($sql, $params)->fetch();
+    }
+    
+    public function fetchAll($sql, $params = []) {
+        return $this->query($sql, $params)->fetchAll();
+    }
+    
+    public function lastInsertId() {
+        return $this->pdo->lastInsertId();
+    }
+}
+?>
