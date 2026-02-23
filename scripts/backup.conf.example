@@ -1,0 +1,8 @@
+# Configuration pour le script de sauvegarde
+# Copier vers backup.conf : cp backup.conf.example backup.conf
+# Renseigner les identifiants MySQL (backup.conf est ignoré par Git)
+
+DB_HOST="localhost"
+DB_NAME="itmanager"
+DB_USER="votre_utilisateur"
+DB_PASS="votre_mot_de_passe"
