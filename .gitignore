@@ -37,6 +37,7 @@ Thumbs.db
 # Configuration sensible (identifiants BDD)
 config/Database.php
 config/database.php
+config/api_config.php
 
 # Fichiers de debug
 debug.php
@@ -45,9 +46,32 @@ debug_backup.php
 # Fichiers sensibles
 cookies.txt
 
+# Binaires agent
+agent/itmanager-agent.exe
+agent/*.exe
+
+# Config agent (clé API)
+agent/agent.json
+agent/agent.conf.json
+
 # Backup files
 *.bak
 *.backup
 
 # Config du script de backup (identifiants)
 scripts/backup.conf
+scripts/github_token
+
+# Certificats de signature (ne jamais commiter)
+*.pfx
+*.p12
+# Cursor IDE
+.cursor/
+
+# Binaires agents
+agent-monitor/*.exe
+agent-monitor/itmanager-agent-monitor
+agent-nas/*.exe
+agent-nas/agent-nas
+agent-monitor/agent.json
+agent-nas/agent.json

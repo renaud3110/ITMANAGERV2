@@ -77,6 +77,19 @@
                         </select>
                     </div>
 
+                    <div class="form-group">
+                        <label for="teamviewer_id">TeamViewer ID</label>
+                        <input type="text" id="teamviewer_id" name="teamviewer_id" class="form-control" 
+                               value="<?= htmlspecialchars($computer['teamviewer_id'] ?? '') ?>" 
+                               placeholder="Ex: 123 456 789">
+                    </div>
+                    <div class="form-group">
+                        <label for="rustdesk_id">RustDesk ID</label>
+                        <input type="text" id="rustdesk_id" name="rustdesk_id" class="form-control" 
+                               value="<?= htmlspecialchars($computer['rustdesk_id'] ?? '') ?>" 
+                               placeholder="rustdesk --get-id">
+                    </div>
+
                     <div class="form-group" id="new_person_section" style="display: none;">
                         <div class="new-person-form">
                             <h4 class="new-person-title">
@@ -120,7 +133,6 @@
             <input type="hidden" name="processor_model" value="<?= htmlspecialchars($computer['processor_model'] ?? '') ?>">
             <input type="hidden" name="operating_system_id" value="<?= htmlspecialchars($computer['operating_system_id'] ?? '') ?>">
             <input type="hidden" name="ip_address_id" value="<?= htmlspecialchars($computer['ip_address_id'] ?? '') ?>">
-            <input type="hidden" name="teamviewer_id" value="<?= htmlspecialchars($computer['teamviewer_id'] ?? '') ?>">
             <input type="hidden" name="last_account" value="<?= htmlspecialchars($computer['last_account'] ?? '') ?>">
 
             <div class="form-actions">

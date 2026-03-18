@@ -27,6 +27,22 @@
         <div class="stat-number"><?= $printersCount ?? 0 ?></div>
         <div class="stat-label">Imprimantes</div>
     </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-database"></i>
+        </div>
+        <div class="stat-number"><?= $nasCount ?? 0 ?></div>
+        <div class="stat-label">NAS</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-cube"></i>
+        </div>
+        <div class="stat-number"><?= $esxiCount ?? 0 ?></div>
+        <div class="stat-label">Serveur de virtualisation</div>
+    </div>
 </div>
 
 <div class="hardware-sections">
@@ -54,6 +70,36 @@
         <div class="section-count"><?= $serversCount ?? 0 ?> serveurs</div>
         <div class="section-actions">
             <a href="?page=servers&action=create" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus"></i>
+                Ajouter
+            </a>
+        </div>
+    </div>
+
+    <div class="section-card" onclick="location.href='?page=hardware&section=nas'">
+        <div class="section-icon">
+            <i class="fas fa-database"></i>
+        </div>
+        <h3 class="section-title">NAS</h3>
+        <p class="section-description">Gestion des NAS (Synology, QNAP...)</p>
+        <div class="section-count"><?= $nasCount ?? 0 ?> NAS</div>
+        <div class="section-actions">
+            <a href="?page=hardware&section=nas&action=create" class="btn btn-sm btn-primary" onclick="event.stopPropagation()">
+                <i class="fas fa-plus"></i>
+                Ajouter
+            </a>
+        </div>
+    </div>
+
+    <div class="section-card" onclick="location.href='?page=hardware&section=esxi'">
+        <div class="section-icon">
+            <i class="fas fa-cube"></i>
+        </div>
+        <h3 class="section-title">Serveur de virtualisation</h3>
+        <p class="section-description">Hôtes VMware ESXi, Proxmox... et inventaire des VMs</p>
+        <div class="section-count"><?= $esxiCount ?? 0 ?> hôtes</div>
+        <div class="section-actions">
+            <a href="?page=hardware&section=esxi&action=create" class="btn btn-sm btn-primary" onclick="event.stopPropagation()">
                 <i class="fas fa-plus"></i>
                 Ajouter
             </a>

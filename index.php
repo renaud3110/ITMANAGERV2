@@ -2,6 +2,9 @@
 session_start();
 ob_start(); // Démarrer le buffering de sortie
 
+// Fuseau horaire pour l'affichage (les timestamps moniteur sont stockés en UTC)
+date_default_timezone_set('Europe/Brussels');
+
 // Configuration de base
 define('BASE_PATH', __DIR__);
 define('BASE_URL', '/');
@@ -32,6 +35,7 @@ $section = $_GET['section'] ?? null;
 $routes = [
     'auth' => 'AuthController',
     'dashboard' => 'DashboardController',
+    'remote' => 'RemoteController',
     'hardware' => 'HardwareController',
     'networks' => 'NetworksController',
     'ip-management' => 'IpManagementController',

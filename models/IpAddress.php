@@ -14,16 +14,28 @@ class IpAddress
 
     /**
      * Récupère toutes les adresses IP avec informations des sites
+     * et l'équipement associé (PC, serveur ou équipement réseau)
      */
     public function getAll($tenant_id = null, $site_id = null) 
     {
         $query = "SELECT ip.*, 
                          s.name as site_name,
                          t.name as tenant_name,
-                         CASE WHEN ne.ip_address_id IS NOT NULL THEN 1 ELSE 0 END as is_used
+                         CASE 
+                             WHEN pc.id IS NOT NULL THEN 1 
+                             WHEN srv.id IS NOT NULL THEN 1 
+                             WHEN ne.id IS NOT NULL THEN 1 
+                             ELSE 0 
+                         END as is_used,
+                         COALESCE(pc.name, srv.name, srv.hostname, ne.name) as equipment_name,
+                         COALESCE(pc.id, 0) as pc_id,
+                         COALESCE(srv.id, 0) as server_id,
+                         COALESCE(ne.id, 0) as network_equipment_id
                   FROM ip_addresses ip
                   LEFT JOIN sites s ON ip.site_id = s.id
                   LEFT JOIN tenants t ON ip.tenant_id = t.id
+                  LEFT JOIN pcs_laptops pc ON pc.ip_address_id = ip.id
+                  LEFT JOIN servers srv ON srv.ip_address_id = ip.id
                   LEFT JOIN network_equipments ne ON ne.ip_address_id = ip.id
                   WHERE 1=1";
         
@@ -120,14 +132,17 @@ class IpAddress
      */
     public function delete($id) 
     {
-        // Vérifier si l'adresse IP est utilisée
-        $checkQuery = "SELECT COUNT(*) as count FROM network_equipments WHERE ip_address_id = ?";
+        // Vérifier si l'adresse IP est utilisée (PC, serveur ou équipement réseau)
+        $checkQuery = "SELECT 
+            (SELECT COUNT(*) FROM pcs_laptops WHERE ip_address_id = ?) +
+            (SELECT COUNT(*) FROM servers WHERE ip_address_id = ?) +
+            (SELECT COUNT(*) FROM network_equipments WHERE ip_address_id = ?) as total";
         $checkStmt = $this->db->prepare($checkQuery);
-        $checkStmt->execute([$id]);
+        $checkStmt->execute([$id, $id, $id]);
         $result = $checkStmt->fetch();
         
-        if ($result['count'] > 0) {
-            throw new Exception("Cette adresse IP est utilisée par un équipement réseau et ne peut pas être supprimée.");
+        if ($result['total'] > 0) {
+            throw new Exception("Cette adresse IP est utilisée par un équipement et ne peut pas être supprimée.");
         }
         
         $query = "DELETE FROM ip_addresses WHERE id = ?";
@@ -160,14 +175,19 @@ class IpAddress
     }
     
     /**
-     * Compte des adresses IP utilisées
+     * Compte des adresses IP utilisées (PCs, serveurs, équipements réseau)
      */
     public function getUsedCount($tenant_id = null, $site_id = null) 
     {
-        $query = "SELECT COUNT(DISTINCT ne.ip_address_id) as count 
-                  FROM network_equipments ne
-                  INNER JOIN ip_addresses ip ON ne.ip_address_id = ip.id
-                  WHERE ne.ip_address_id IS NOT NULL";
+        $query = "SELECT COUNT(DISTINCT ip_id) as count FROM (
+                  SELECT pc.ip_address_id as ip_id FROM pcs_laptops pc WHERE pc.ip_address_id IS NOT NULL
+                  UNION
+                  SELECT srv.ip_address_id as ip_id FROM servers srv WHERE srv.ip_address_id IS NOT NULL
+                  UNION
+                  SELECT ne.ip_address_id as ip_id FROM network_equipments ne WHERE ne.ip_address_id IS NOT NULL
+                  ) used
+                  INNER JOIN ip_addresses ip ON ip.id = used.ip_id
+                  WHERE 1=1";
         $params = [];
         
         if ($tenant_id && $tenant_id !== 'all') {

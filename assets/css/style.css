@@ -33,8 +33,9 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    max-width: 1400px;
-    margin: 0 auto;
+    max-width: none;
+    width: 100%;
+    padding: 0 1rem;
     gap: 2rem;
 }
 
@@ -190,12 +191,11 @@ body {
     color: white !important;
 }
 
-/* Layout principal */
+/* Layout principal - pleine largeur comme détail PC */
 .main-layout {
     display: flex;
     flex: 1;
-    max-width: 1400px;
-    margin: 0 auto;
+    max-width: none;
     width: 100%;
 }
 
@@ -301,11 +301,13 @@ body {
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* Contenu principal */
+/* Contenu principal - pleine largeur */
 .content {
     flex: 1;
-    padding: 2rem;
+    padding: 1rem 2rem;
     background: #f8fafc;
+    max-width: none;
+    width: 100%;
 }
 
 /* Alertes */
@@ -347,7 +349,7 @@ body {
 
 .card-header {
     display: flex;
-    justify-content: between;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
@@ -547,6 +549,12 @@ body {
     font-size: 2rem;
     font-weight: 600;
     color: #1f2937;
+}
+
+/* Conteneur page - pleine largeur comme détail PC */
+.page-container {
+    width: 100%;
+    max-width: none;
 }
 
 /* Responsive */

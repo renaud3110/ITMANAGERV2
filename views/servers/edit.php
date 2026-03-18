@@ -130,9 +130,31 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
+                            <label for="person_id">Personne attribuée</label>
+                            <select class="form-control" id="person_id" name="person_id">
+                                <option value="">Non attribué</option>
+                                <?php foreach ($persons ?? [] as $person): ?>
+                                    <option value="<?= $person['id'] ?>" 
+                                            <?= ($_POST['person_id'] ?? $server['person_id']) == $person['id'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($person['prenom'] . ' ' . $person['nom']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
                             <label for="teamviewer_id">TeamViewer ID</label>
                             <input type="text" class="form-control" id="teamviewer_id" name="teamviewer_id" 
                                    value="<?= htmlspecialchars($_POST['teamviewer_id'] ?? $server['teamviewer_id']) ?>">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="rustdesk_id">RustDesk ID</label>
+                            <input type="text" class="form-control" id="rustdesk_id" name="rustdesk_id" 
+                                   value="<?= htmlspecialchars($_POST['rustdesk_id'] ?? $server['rustdesk_id']) ?>"
+                                   placeholder="rustdesk --get-id">
                         </div>
                     </div>
                 </div>

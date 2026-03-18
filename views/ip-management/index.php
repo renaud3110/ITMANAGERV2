@@ -138,12 +138,14 @@
     </div>
     
     <div class="card">
-        <div class="card-header">
-            <h2 class="card-title">
-                <i class="fas fa-sitemap"></i>
-                Adresses IP
-            </h2>
-            <div class="card-actions">
+        <div class="card-header card-header-ip">
+            <div class="card-title-block">
+                <h2 class="card-title">
+                    <i class="fas fa-sitemap"></i>
+                    Adresses IP du site : <span class="context-value"><?= htmlspecialchars($currentTenantName) ?> / <?= htmlspecialchars($currentSiteName) ?></span>
+                </h2>
+            </div>
+            <div class="card-actions card-actions-right">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
                     <input type="text" id="searchInput" placeholder="Rechercher une adresse IP...">
@@ -183,8 +185,32 @@
                                 <tr class="ip-row">
                                     <td class="ip-main">
                                         <div class="ip-wrapper">
-                                            <code class="ip-address"><?= htmlspecialchars($ip['ip_address']) ?></code>
-                                            <?php if (!empty($ip['tenant_name'])): ?>
+                                            <?php 
+                                            $equipmentUrl = null;
+                                            if (!empty($ip['is_used']) && !empty($ip['equipment_name'])) {
+                                                if (!empty($ip['pc_id'])) {
+                                                    $equipmentUrl = '?page=hardware&section=computers&action=view&id=' . (int)$ip['pc_id'];
+                                                } elseif (!empty($ip['server_id'])) {
+                                                    $equipmentUrl = '?page=servers&action=view&id=' . (int)$ip['server_id'];
+                                                } elseif (!empty($ip['network_equipment_id'])) {
+                                                    $equipmentUrl = '?page=networks&action=edit&id=' . (int)$ip['network_equipment_id'];
+                                                }
+                                            }
+                                            ?>
+                                            <?php if ($equipmentUrl): ?>
+                                                <a href="<?= $equipmentUrl ?>" class="ip-address-link" title="Voir l'équipement">
+                                                    <code class="ip-address"><?= htmlspecialchars($ip['ip_address']) ?></code>
+                                                </a>
+                                            <?php else: ?>
+                                                <code class="ip-address"><?= htmlspecialchars($ip['ip_address']) ?></code>
+                                            <?php endif; ?>
+                                            <?php if (!empty($ip['equipment_name'])): ?>
+                                                <?php if ($equipmentUrl): ?>
+                                                    <a href="<?= $equipmentUrl ?>" class="equipment-info equipment-link" title="Voir l'équipement"><?= htmlspecialchars($ip['equipment_name']) ?></a>
+                                                <?php else: ?>
+                                                    <span class="equipment-info"><?= htmlspecialchars($ip['equipment_name']) ?></span>
+                                                <?php endif; ?>
+                                            <?php elseif (!empty($ip['tenant_name'])): ?>
                                                 <span class="tenant-info"><?= htmlspecialchars($ip['tenant_name']) ?></span>
                                             <?php endif; ?>
                                         </div>
@@ -230,9 +256,9 @@
                                     </td>
                                     <td>
                                         <?php if (isset($ip['is_used']) && $ip['is_used']): ?>
-                                            <span class="status-indicator status-used">
+                                            <span class="status-indicator status-occupied">
                                                 <i class="fas fa-circle"></i>
-                                                Utilisée
+                                                Occupé
                                             </span>
                                         <?php else: ?>
                                             <span class="status-indicator status-free">
@@ -249,17 +275,20 @@
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <div class="action-buttons">
+                                        <div class="action-buttons action-buttons-compact">
+                                            <?php if ($equipmentUrl): ?>
+                                                <a href="<?= $equipmentUrl ?>" class="btn-action btn-action-icon btn-view" title="Voir l'équipement">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </a>
+                                            <?php endif; ?>
                                             <a href="?page=ip-management&action=edit&id=<?= $ip['id'] ?>" 
-                                               class="btn-action btn-edit" title="Modifier">
+                                               class="btn-action btn-action-icon btn-edit" title="Modifier">
                                                 <i class="fas fa-edit"></i>
-                                                <span class="btn-text">Modifier</span>
                                             </a>
                                             <a href="?page=ip-management&action=delete&id=<?= $ip['id'] ?>" 
-                                               class="btn-action btn-delete" title="Supprimer"
+                                               class="btn-action btn-action-icon btn-delete" title="Supprimer"
                                                onclick="return confirmDelete('<?= htmlspecialchars($ip['ip_address']) ?>')">
                                                 <i class="fas fa-trash"></i>
-                                                <span class="btn-text">Supprimer</span>
                                             </a>
                                         </div>
                                     </td>
@@ -274,8 +303,8 @@
                     <h4><i class="fas fa-info-circle"></i> Légende des statuts</h4>
                     <div class="legend-items">
                         <div class="legend-item">
-                            <span class="status-indicator status-used"><i class="fas fa-circle"></i> Utilisée</span>
-                            <small>Adresse IP assignée à un équipement</small>
+                            <span class="status-indicator status-occupied"><i class="fas fa-circle"></i> Occupé</span>
+                            <small>Adresse IP assignée à un équipement (cliquez sur l'IP pour voir l'équipement)</small>
                         </div>
                         <div class="legend-item">
                             <span class="status-indicator status-free"><i class="fas fa-circle"></i> Libre</span>
@@ -544,6 +573,7 @@ function confirmDelete(ipAddress) {
     letter-spacing: 0.5px;
 }
 
+.status-occupied,
 .status-used {
     background-color: #dcfce7;
     color: #166534;
@@ -556,8 +586,34 @@ function confirmDelete(ipAddress) {
     border: 1px solid #d1d5db;
 }
 
-.status-used i, .status-free i {
+.status-occupied i, .status-used i, .status-free i {
     font-size: 0.6rem;
+}
+
+.ip-address-link {
+    text-decoration: none;
+}
+
+.ip-address-link:hover .ip-address {
+    background-color: #dbeafe;
+    border-color: #93c5fd;
+}
+
+.equipment-info {
+    display: block;
+    font-size: 0.8rem;
+    color: #4b5563;
+    font-weight: 500;
+    margin-top: 0.2rem;
+}
+
+.equipment-link {
+    color: #1d4ed8;
+    text-decoration: none;
+}
+
+.equipment-link:hover {
+    text-decoration: underline;
 }
 
 /* ===== SITE INFO ===== */
@@ -783,6 +839,28 @@ function confirmDelete(ipAddress) {
     border-bottom: none;
 }
 
+/* ===== CARD HEADER IP ===== */
+.card-header-ip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.card-title-block {
+    flex: 0 1 auto;
+}
+
+.card-actions-right {
+    margin-left: auto;
+}
+
+.card-header-ip .context-value {
+    font-weight: 600;
+    color: #4b5563;
+}
+
 /* ===== BOUTONS D'ACTION ===== */
 .action-buttons {
     display: flex;
@@ -790,9 +868,15 @@ function confirmDelete(ipAddress) {
     flex-wrap: wrap;
 }
 
+.action-buttons-compact {
+    gap: 0.35rem;
+    flex-wrap: nowrap;
+}
+
 .btn-action {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
     border: 1px solid transparent;
@@ -803,6 +887,28 @@ function confirmDelete(ipAddress) {
     transition: all 0.2s ease;
     cursor: pointer;
     white-space: nowrap;
+}
+
+.btn-action-icon {
+    padding: 0.5rem;
+    min-width: 2.25rem;
+}
+
+.btn-action-icon .btn-text {
+    display: none;
+}
+
+.btn-view {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+}
+
+.btn-view:hover {
+    background-color: #1d4ed8;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
 }
 
 .btn-edit {
@@ -876,9 +982,30 @@ function confirmDelete(ipAddress) {
     margin-left: 0.5rem;
 }
 
+/* ===== SEARCH BOX ALIGNMENT ===== */
+.card-actions-right .search-box {
+    position: relative;
+    min-width: 220px;
+}
+
+.card-actions-right .search-box input {
+    padding: 0.5rem 2rem 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    width: 100%;
+}
+
+.card-actions-right .search-box i {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+}
+
 /* ===== RESPONSIVE DESIGN ===== */
 @media (min-width: 1024px) {
-    .btn-text {
+    .action-buttons:not(.action-buttons-compact) .btn-text {
         display: inline;
     }
     
@@ -1021,10 +1148,14 @@ function confirmDelete(ipAddress) {
         font-size: 0.7rem;
     }
     
-    .action-buttons {
+    .action-buttons:not(.action-buttons-compact) {
         flex-direction: column;
         gap: 0.25rem;
         align-items: stretch;
+    }
+    
+    .action-buttons-compact {
+        flex-direction: row;
     }
     
     .ip-row:hover {

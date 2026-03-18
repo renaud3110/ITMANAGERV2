@@ -1,6 +1,8 @@
 <?php
 
 require_once 'models/IpAddress.php';
+require_once 'models/Tenant.php';
+require_once 'models/Site.php';
 
 class IpManagementController extends BaseController {
     
@@ -20,6 +22,17 @@ class IpManagementController extends BaseController {
         $currentTenant = $_SESSION['current_tenant'] ?? 'all';
         $currentSite = $_SESSION['current_site'] ?? 'all';
         
+        $currentTenantName = 'Tous';
+        $currentSiteName = 'Tous les sites';
+        if ($currentTenant !== 'all') {
+            $tenant = (new Tenant())->getById($currentTenant);
+            $currentTenantName = $tenant['name'] ?? "Tenant $currentTenant";
+        }
+        if ($currentSite !== 'all') {
+            $site = (new Site())->getSiteById($currentSite);
+            $currentSiteName = $site['name'] ?? "Site $currentSite";
+        }
+        
         // Récupérer les adresses IP selon le tenant/site sélectionné
         $ipAddresses = $this->ipModel->getAll($currentTenant, $currentSite);
         
@@ -33,6 +46,8 @@ class IpManagementController extends BaseController {
             'stats' => $stats,
             'currentTenant' => $currentTenant,
             'currentSite' => $currentSite,
+            'currentTenantName' => $currentTenantName,
+            'currentSiteName' => $currentSiteName,
             'flash' => $flash
         ]);
     }

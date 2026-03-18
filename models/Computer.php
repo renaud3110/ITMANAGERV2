@@ -11,6 +11,12 @@ class Computer extends BaseModel
     {
         $sql = "SELECT 
                     pc.*,
+                    mon.cpu_temp as monitor_cpu_temp,
+                    mon.gpu_temp as monitor_gpu_temp,
+                    mon.last_seen as monitor_last_seen,
+                    mon.logged_in as monitor_logged_in,
+                    mon.last_logout_at as monitor_last_logout_at,
+                    mon.logged_in_username as monitor_logged_in_username,
                     t.name as tenant_name,
                     s.name as site_name,
                     os.name as operating_system_name,
@@ -36,6 +42,7 @@ class Computer extends BaseModel
                 LEFT JOIN manufacturers mf ON m.manufacturer_id = mf.id
                 LEFT JOIN logins l ON pc.account_id = l.id
                 LEFT JOIN persons p ON pc.person_id = p.id
+                LEFT JOIN pc_monitor_status mon ON pc.id = mon.pc_id
                 WHERE 1=1";
         
         $params = [];
@@ -59,6 +66,12 @@ class Computer extends BaseModel
     {
         $sql = "SELECT 
                     pc.*,
+                    mon.cpu_temp as monitor_cpu_temp,
+                    mon.gpu_temp as monitor_gpu_temp,
+                    mon.last_seen as monitor_last_seen,
+                    mon.logged_in as monitor_logged_in,
+                    mon.last_logout_at as monitor_last_logout_at,
+                    mon.logged_in_username as monitor_logged_in_username,
                     t.name as tenant_name,
                     s.name as site_name,
                     os.name as operating_system_name,
@@ -84,6 +97,7 @@ class Computer extends BaseModel
                 LEFT JOIN manufacturers mf ON m.manufacturer_id = mf.id
                 LEFT JOIN logins l ON pc.account_id = l.id
                 LEFT JOIN persons p ON pc.person_id = p.id
+                LEFT JOIN pc_monitor_status mon ON pc.id = mon.pc_id
                 WHERE pc.id = ?";
         
         return $this->fetch($sql, [$id]);
@@ -93,9 +107,9 @@ class Computer extends BaseModel
     {
         $sql = "INSERT INTO pcs_laptops (
                     name, tenant_id, site_id, operating_system_id, ip_address_id, 
-                    processor_model, teamviewer_id, model_id, status, 
+                    processor_model, teamviewer_id, rustdesk_id, model_id, status, 
                     account_id, last_account, serial_number
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $stmt = $this->query($sql, [
             $data['name'] ?: null,
@@ -105,6 +119,7 @@ class Computer extends BaseModel
             $data['ip_address_id'] ?: null,
             $data['processor_model'] ?: null,
             $data['teamviewer_id'] ?: null,
+            $data['rustdesk_id'] ?: null,
             $data['model_id'] ?: null,
             $data['status'] ?: 'free',
             $data['account_id'] ?: null,
@@ -120,6 +135,7 @@ class Computer extends BaseModel
         $sql = "UPDATE pcs_laptops SET 
                     name = ?, tenant_id = ?, site_id = ?, operating_system_id = ?, 
                     ip_address_id = ?, processor_model = ?, teamviewer_id = ?, 
+                    rustdesk_id = ?,
                     model_id = ?, status = ?, account_id = ?, person_id = ?,
                     last_account = ?, serial_number = ?
                 WHERE id = ?";
@@ -132,6 +148,7 @@ class Computer extends BaseModel
             $data['ip_address_id'] ?: null,
             $data['processor_model'] ?: null,
             $data['teamviewer_id'] ?: null,
+            $data['rustdesk_id'] ?: null,
             $data['model_id'] ?: null,
             $data['status'] ?: 'free',
             $data['account_id'] ?: null,
@@ -228,5 +245,77 @@ class Computer extends BaseModel
         }
         
         return array_values($disks);
+    }
+
+    public function getGpus($pcId)
+    {
+        $sql = "SELECT id, model, vendor, driver_version, vram_bytes, video_processor FROM pc_gpus WHERE pc_id = ? ORDER BY id";
+        return $this->fetchAll($sql, [$pcId]);
+    }
+
+    public function getMonitors($pcId)
+    {
+        $sql = "SELECT id, name, manufacturer, serial_number, resolution FROM pc_monitors WHERE pc_id = ? ORDER BY id";
+        return $this->fetchAll($sql, [$pcId]);
+    }
+
+    public function getPrinters($pcId)
+    {
+        $sql = "SELECT id, name, driver, port, is_default, is_shared FROM pc_printers WHERE pc_id = ? ORDER BY name";
+        return $this->fetchAll($sql, [$pcId]);
+    }
+
+    public function getNetworkAdapters($pcId)
+    {
+        $sql = "SELECT id, name, type, ip_cidr, gateway, wifi_ssid FROM pc_network_adapters WHERE pc_id = ? ORDER BY type, name";
+        return $this->fetchAll($sql, [$pcId]);
+    }
+
+    public function getWindowsUpdates($pcId)
+    {
+        $sql = "SELECT id, hotfix_id, description, installed_on FROM pc_windows_updates WHERE pc_id = ? ORDER BY installed_on DESC, hotfix_id";
+        return $this->fetchAll($sql, [$pcId]);
+    }
+
+    public function getWindowsServices($pcId)
+    {
+        $sql = "SELECT id, name, display_name, description, status, start_type FROM pc_windows_services WHERE pc_id = ? ORDER BY name";
+        return $this->fetchAll($sql, [$pcId]);
+    }
+
+    public function getWindowsStartup($pcId)
+    {
+        $sql = "SELECT id, name, command, location FROM pc_windows_startup WHERE pc_id = ? ORDER BY name";
+        return $this->fetchAll($sql, [$pcId]);
+    }
+
+    public function getWindowsShared($pcId)
+    {
+        $sql = "SELECT id, name, path, description FROM pc_windows_shared WHERE pc_id = ? ORDER BY name";
+        return $this->fetchAll($sql, [$pcId]);
+    }
+
+    public function getWindowsMapped($pcId)
+    {
+        $sql = "SELECT id, drive_letter, path, label FROM pc_windows_mapped WHERE pc_id = ? ORDER BY drive_letter";
+        return $this->fetchAll($sql, [$pcId]);
+    }
+
+    public function getWindowsUsers($pcId)
+    {
+        $sql = "SELECT id, username, full_name, last_login, account_type FROM pc_windows_users WHERE pc_id = ? ORDER BY last_login DESC, username";
+        return $this->fetchAll($sql, [$pcId]);
+    }
+
+    public function getWindowsUserGroups($pcId)
+    {
+        $sql = "SELECT id, group_name FROM pc_windows_user_groups WHERE pc_id = ? ORDER BY group_name";
+        return $this->fetchAll($sql, [$pcId]);
+    }
+
+    public function getWindowsLicense($pcId)
+    {
+        $sql = "SELECT id, description, status FROM pc_windows_license WHERE pc_id = ?";
+        return $this->fetch($sql, [$pcId]);
     }
 } 

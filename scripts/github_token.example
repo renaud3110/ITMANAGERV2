@@ -1,0 +1,4 @@
+# Token GitHub pour le push automatique
+# Copier vers github_token : cp github_token.example github_token
+# Coller votre token (ghp_xxx) dans github_token - une seule ligne
+# Ce fichier est ignoré par Git

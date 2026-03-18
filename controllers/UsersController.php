@@ -40,13 +40,13 @@ class UsersController extends BaseController {
                 $this->redirectWithMessage('users', 'index', 'Utilisateur créé avec succès');
             } catch (Exception $e) {
                 $error = "Erreur lors de la création de l'utilisateur: " . $e->getMessage();
-                $tenants = $this->tenantModel->getAllTenants();
+                $tenants = $this->tenantModel->getAll();
                 $this->loadView('users/create', ['error' => $error, 'tenants' => $tenants]);
                 return;
             }
         }
 
-        $tenants = $this->tenantModel->getAllTenants();
+        $tenants = $this->tenantModel->getAll();
         $this->loadView('users/create', ['tenants' => $tenants]);
     }
 
@@ -74,13 +74,13 @@ class UsersController extends BaseController {
                 $this->redirectWithMessage('users', 'index', 'Utilisateur mis à jour avec succès');
             } catch (Exception $e) {
                 $error = "Erreur lors de la mise à jour: " . $e->getMessage();
-                $tenants = $this->tenantModel->getAllTenants();
+                $tenants = $this->tenantModel->getAll();
                 $this->loadView('users/edit', ['user' => $user, 'tenants' => $tenants, 'error' => $error]);
                 return;
             }
         }
 
-        $tenants = $this->tenantModel->getAllTenants();
+        $tenants = $this->tenantModel->getAll();
         $this->loadView('users/edit', ['user' => $user, 'tenants' => $tenants]);
     }
 

@@ -6,6 +6,7 @@ require_once 'models/Tenant.php';
 require_once 'models/OperatingSystem.php';
 require_once 'models/IpAddress.php';
 require_once 'models/Model.php';
+require_once 'models/Person.php';
 
 class ServersController extends BaseController 
 {
@@ -15,6 +16,7 @@ class ServersController extends BaseController
     private $osModel;
     private $ipModel;
     private $modelModel;
+    private $personModel;
 
     public function __construct() 
     {
@@ -25,6 +27,7 @@ class ServersController extends BaseController
         $this->osModel = new OperatingSystem();
         $this->ipModel = new IpAddress();
         $this->modelModel = new Model();
+        $this->personModel = new Person();
     }
 
     public function index() 
@@ -53,15 +56,33 @@ class ServersController extends BaseController
         }
         
         $server = $this->serverModel->getById($id);
-        
         if (!$server) {
             $_SESSION['error'] = 'Serveur non trouvé.';
             header('Location: ?page=servers');
             exit;
         }
-        
+        $installedSoftware = $this->serverModel->getInstalledSoftware($id);
+        $disks = $this->serverModel->getDisksWithPartitions($id);
+        $windowsUpdates = $this->serverModel->getWindowsUpdates($id);
+        $windowsServices = $this->serverModel->getWindowsServices($id);
+        $windowsStartup = $this->serverModel->getWindowsStartup($id);
+        $windowsShared = $this->serverModel->getWindowsShared($id);
+        $windowsMapped = $this->serverModel->getWindowsMapped($id);
+        $windowsUsers = $this->serverModel->getWindowsUsers($id);
+        $windowsUserGroups = $this->serverModel->getWindowsUserGroups($id);
+        $windowsLicense = $this->serverModel->getWindowsLicense($id);
         $this->loadView('servers/view', [
-            'server' => $server
+            'server' => $server,
+            'installedSoftware' => $installedSoftware,
+            'disks' => $disks,
+            'windowsUpdates' => $windowsUpdates,
+            'windowsServices' => $windowsServices,
+            'windowsStartup' => $windowsStartup,
+            'windowsShared' => $windowsShared,
+            'windowsMapped' => $windowsMapped,
+            'windowsUsers' => $windowsUsers,
+            'windowsUserGroups' => $windowsUserGroups,
+            'windowsLicense' => $windowsLicense
         ]);
     }
 
@@ -79,7 +100,8 @@ class ServersController extends BaseController
                 'operating_system_id' => $_POST['operating_system_id'] ?? null,
                 'ip_address_id' => $_POST['ip_address_id'] ?? null,
                 'hostname' => $_POST['hostname'] ?? '',
-                'teamviewer_id' => $_POST['teamviewer_id'] ?? ''
+                'teamviewer_id' => $_POST['teamviewer_id'] ?? '',
+                'rustdesk_id' => $_POST['rustdesk_id'] ?? ''
             ];
             
             if ($this->serverModel->create($data)) {
@@ -133,7 +155,9 @@ class ServersController extends BaseController
                 'operating_system_id' => $_POST['operating_system_id'] ?? null,
                 'ip_address_id' => $_POST['ip_address_id'] ?? null,
                 'hostname' => $_POST['hostname'] ?? '',
-                'teamviewer_id' => $_POST['teamviewer_id'] ?? ''
+                'teamviewer_id' => $_POST['teamviewer_id'] ?? '',
+                'rustdesk_id' => $_POST['rustdesk_id'] ?? '',
+                'person_id' => !empty($_POST['person_id']) ? (int)$_POST['person_id'] : null
             ];
             
             if ($this->serverModel->update($id, $data)) {
@@ -149,13 +173,15 @@ class ServersController extends BaseController
         $operatingSystems = $this->osModel->getAll();
         $ipAddresses = $this->ipModel->getAll();
         $models = $this->modelModel->getAll();
+        $persons = $this->personModel->getAll();
         
         $this->loadView('servers/edit', [
             'server' => $server,
             'sites' => $sites,
             'operatingSystems' => $operatingSystems,
             'ipAddresses' => $ipAddresses,
-            'models' => $models
+            'models' => $models,
+            'persons' => $persons
         ]);
     }
 

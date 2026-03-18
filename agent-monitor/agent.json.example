@@ -1,0 +1,6 @@
+{
+  "api_url": "https://it.rgdsystems.be/api/inventory.php",
+  "api_key": "votre-clé-api",
+  "site_id": 1,
+  "interval_seconds": 60
+}

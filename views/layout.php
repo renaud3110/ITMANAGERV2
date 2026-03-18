@@ -22,7 +22,7 @@
                 
                 <div class="header-center">
                     <div class="tenant-selector">
-                        <form method="POST" class="inline-form" id="tenant-form">
+                        <form method="POST" class="inline-form" id="tenant-form" action="<?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? '') ?>">
                             <div class="form-group">
                                 <label for="tenant_id">
                                     <i class="fas fa-building"></i>
@@ -40,7 +40,7 @@
                             </div>
                         </form>
                         
-                        <form method="POST" class="inline-form" id="site-form">
+                        <form method="POST" class="inline-form" id="site-form" action="<?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? '') ?>">
                             <div class="form-group">
                                 <label for="site_id">
                                     <i class="fas fa-map-marker-alt"></i>
@@ -92,6 +92,12 @@
                         <a href="?page=dashboard" class="nav-link <?= ($_GET['page'] ?? 'dashboard') === 'dashboard' ? 'active' : '' ?>">
                             <i class="fas fa-tachometer-alt"></i>
                             <span>Tableau de bord</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="?page=remote" class="nav-link <?= ($_GET['page'] ?? '') === 'remote' ? 'active' : '' ?>">
+                            <i class="fas fa-desktop"></i>
+                            <span>Remote</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -245,6 +251,7 @@
                     </div>
                 <?php endif; ?>
                 
+                <div class="page-container">
                 <?php 
                 // Charger la vue spécifique
                 $viewFile = "views/$view.php";
@@ -254,6 +261,7 @@
                     echo "<h1>Vue non trouvée: $view</h1>";
                 }
                 ?>
+                </div>
             </main>
         </div>
     </div>

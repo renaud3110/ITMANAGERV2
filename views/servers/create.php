@@ -135,6 +135,14 @@
                                    value="<?= htmlspecialchars($_POST['teamviewer_id'] ?? '') ?>">
                         </div>
                     </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="rustdesk_id">RustDesk ID</label>
+                            <input type="text" class="form-control" id="rustdesk_id" name="rustdesk_id" 
+                                   value="<?= htmlspecialchars($_POST['rustdesk_id'] ?? '') ?>"
+                                   placeholder="rustdesk --get-id">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-group">

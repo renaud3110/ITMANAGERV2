@@ -10,6 +10,16 @@ class BaseController {
     }
 
     protected function loadView($view, $data = [], $useLayout = true) {
+        // Protocole RustDesk/supportrgd pour les liens (supportrgd si build personnalisé)
+        if (!isset($data['rustdeskProtocol'])) {
+            $data['rustdeskProtocol'] = 'rustdesk';
+            if (file_exists(BASE_PATH . '/config/api_config.php')) {
+                require_once BASE_PATH . '/config/api_config.php';
+                if (defined('RUSTDESK_PROTOCOL') && in_array(RUSTDESK_PROTOCOL, ['rustdesk', 'supportrgd'], true)) {
+                    $data['rustdeskProtocol'] = RUSTDESK_PROTOCOL;
+                }
+            }
+        }
         // Extraire les données pour les rendre disponibles dans la vue
         extract($data);
 

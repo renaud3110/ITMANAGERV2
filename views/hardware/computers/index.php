@@ -40,15 +40,15 @@
             </div>
         </div>
         
-        <div class="stat-card clickable" data-filter="teamviewer" title="Afficher uniquement les PC avec TeamViewer">
-            <div class="stat-icon teamviewer">
+        <div class="stat-card clickable" data-filter="rustdesk" title="Afficher uniquement les PC avec RustDesk">
+            <div class="stat-icon rustdesk">
                 <i class="fas fa-desktop"></i>
             </div>
             <div class="stat-content">
                 <div class="stat-number">
-                    <?= count(array_filter($computers, function($c) { return !empty($c['teamviewer_id']); })) ?>
+                    <?= count(array_filter($computers, function($c) { return !empty($c['rustdesk_id']); })) ?>
                 </div>
-                <div class="stat-label">Avec TeamViewer</div>
+                <div class="stat-label">Avec RustDesk</div>
             </div>
         </div>
     </div>
@@ -77,38 +77,58 @@
                     <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                         <thead>
                             <tr>
-                                <th>Nom</th>
+                                <th class="col-name">Nom</th>
                                 <th>Modèle</th>
-                                <th>Site</th>
-                                <th>Système d'exploitation</th>
+                                <th>Températures</th>
+                                <th>OS</th>
                                 <th>Personne attribuée</th>
-                                <th>TeamViewer</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($computers as $computer): ?>
                                 <tr>
-                                    <td>
-                                        <a href="?page=hardware&section=computers&action=view&id=<?= $computer['id'] ?>" class="text-decoration-none">
+                                    <td class="col-name">
+                                        <a href="?page=hardware&section=computers&action=view&id=<?= $computer['id'] ?>" class="text-decoration-none name-link">
                                             <strong><?= htmlspecialchars($computer['name'] ?? 'Sans nom') ?></strong>
                                         </a>
-                                        <?php if ($computer['serial_number']): ?>
-                                            <br><small class="text-muted">S/N: <?= htmlspecialchars($computer['serial_number']) ?></small>
-                                        <?php endif; ?>
                                     </td>
                                     <td>
                                         <strong><?= htmlspecialchars($computer['model_brand'] ?? 'N/A') ?></strong>
                                         <br><small class="text-muted"><?= htmlspecialchars($computer['model_name'] ?? 'N/A') ?></small>
                                     </td>
-                                    <td><?= htmlspecialchars($computer['site_name'] ?? 'N/A') ?></td>
-                                    <td>
-                                        <?php if ($computer['operating_system_name']): ?>
-                                            <strong><?= htmlspecialchars($computer['operating_system_name']) ?></strong>
-                                            <?php if ($computer['os_version_name']): ?>
-                                                <br><small class="text-muted"><?= htmlspecialchars($computer['os_version_name']) ?></small>
+                                    <td class="col-temps">
+                                        <?php
+                                        $hasTemps = (isset($computer['monitor_cpu_temp']) && $computer['monitor_cpu_temp'] !== null)
+                                            || (isset($computer['monitor_gpu_temp']) && $computer['monitor_gpu_temp'] !== null);
+                                        $hasLastSeen = !empty($computer['monitor_last_seen']);
+                                        if ($hasLastSeen || $hasTemps):
+                                            $diff = $hasLastSeen ? time() - strtotime($computer['monitor_last_seen'] . ' UTC') : 999;
+                                            $monOnline = $diff < 60;
+                                        ?>
+                                        <span class="badge badge-<?= $monOnline ? 'success' : 'danger' ?>" style="font-size:0.75rem;">
+                                            <?= $monOnline ? '● En ligne' : ($hasLastSeen ? '○ Hors ligne' : '-') ?>
+                                            <?php if (isset($computer['monitor_cpu_temp']) && $computer['monitor_cpu_temp'] !== null): ?>
+                                                <span class="ms-1"><i class="fas fa-microchip" title="CPU"></i> <?= round($computer['monitor_cpu_temp'], 0) ?>°C</span>
                                             <?php endif; ?>
+                                            <?php if (isset($computer['monitor_gpu_temp']) && $computer['monitor_gpu_temp'] !== null): ?>
+                                                <span class="ms-1"><i class="fas fa-video" title="GPU"></i> <?= round($computer['monitor_gpu_temp'], 0) ?>°C</span>
+                                            <?php endif; ?>
+                                        </span>
                                         <?php else: ?>
+                                        <small class="text-muted">—</small>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php
+                                        if ($computer['operating_system_name']):
+                                            $osName = $computer['operating_system_name'];
+                                            $osVer = $computer['os_version_name'] ?? '';
+                                            $osShort = preg_replace('/^Windows\s+11.*$/i', 'W11', $osName);
+                                            $osShort = preg_replace('/^Windows\s+10.*$/i', 'W10', $osShort);
+                                            $osShort = preg_replace('/^Microsoft\s+/i', '', $osShort);
+                                            echo htmlspecialchars(trim($osShort . ($osVer ? ' ' . $osVer : '')));
+                                        else: ?>
                                             <span class="text-muted">Non défini</span>
                                         <?php endif; ?>
                                     </td>
@@ -123,19 +143,15 @@
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <?php if ($computer['teamviewer_id']): ?>
-                                            <a href="https://start.teamviewer.com/<?= htmlspecialchars($computer['teamviewer_id']) ?>" 
-                                               target="_blank" 
-                                               class="btn btn-primary btn-sm" title="Se connecter via TeamViewer">
-                                                <i class="fas fa-desktop"></i>
-                                                <?= htmlspecialchars($computer['teamviewer_id']) ?>
+                                        <div class="btn-group btn-group-inline" role="group">
+                                            <?php if (!empty($computer['rustdesk_id'])): ?>
+                                            <a href="<?= ($rustdeskProtocol ?? 'rustdesk') ?>://<?= htmlspecialchars($computer['rustdesk_id']) ?>" 
+                                               class="btn btn-sm rustdesk-btn rustdesk-loading"
+                                               data-rustdesk-id="<?= htmlspecialchars($computer['rustdesk_id']) ?>"
+                                               title="RustDesk (<?= htmlspecialchars($computer['rustdesk_id']) ?>)">
+                                                <i class="fas fa-desktop"></i> RD
                                             </a>
-                                        <?php else: ?>
-                                            <span class="text-muted">Non défini</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
+                                            <?php endif; ?>
                                             <a href="?page=hardware&section=computers&action=view&id=<?= $computer['id'] ?>" 
                                                class="btn btn-info btn-sm" title="Voir">
                                                 <i class="fas fa-eye"></i>
@@ -275,8 +291,20 @@
     background: linear-gradient(135deg, #0067b8 0%, #00bcf2 100%);
 }
 
-.stat-icon.teamviewer {
-    background: linear-gradient(135deg, #004788 0%, #0066CC 100%);
+.stat-icon.rustdesk {
+    background: linear-gradient(135deg, #f74c00 0%, #ff6b35 100%);
+}
+
+.col-name {
+    min-width: 180px;
+    white-space: nowrap;
+}
+
+.col-name .name-link {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .stat-content {
@@ -480,6 +508,37 @@
 .dataTables_paginate .paging_simple_numbers a {
     margin: 0 2px !important;
 }
+
+/* Boutons sur une seule ligne */
+.btn-group-inline {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+.btn-group-inline .btn {
+    margin-right: 2px;
+}
+/* RustDesk icône: vert = en ligne, rouge = hors ligne */
+.rustdesk-btn.rustdesk-loading {
+    color: #6b7280;
+    border-color: #9ca3af;
+}
+.rustdesk-btn.rustdesk-online {
+    color: #16a34a;
+    border-color: #16a34a;
+}
+.rustdesk-btn.rustdesk-online:hover {
+    color: #15803d;
+    border-color: #15803d;
+}
+.rustdesk-btn.rustdesk-offline {
+    color: #dc2626;
+    border-color: #dc2626;
+}
+.rustdesk-btn.rustdesk-offline:hover {
+    color: #b91c1c;
+    border-color: #b91c1c;
+}
 </style>
 
 <script>
@@ -543,21 +602,21 @@ window.addEventListener('load', function() {
             
             // Appliquer le filtre
             if (filter === 'all') {
-                table.search('').column(5).search('').draw();
+                table.search('').column(4).search('').draw();
                 $('#filterIndicator').removeClass('active');
             } else {
                 var searchTerm = '';
                 
                 switch(filter) {
                     case 'windows10':
-                        searchTerm = 'Windows 10';
+                        searchTerm = 'W10';
                         break;
                     case 'windows11':
-                        searchTerm = 'Windows 11';
+                        searchTerm = 'W11';
                         break;
-                    case 'teamviewer':
-                        // Filtre par colonne TeamViewer (colonne 5)
-                        table.search('').column(5).search('^(?!.*Non défini).*$', true, false).draw();
+                    case 'rustdesk':
+                        // Filtre par colonne Rust (colonne 4) - afficher uniquement les PC avec RustDesk
+                        table.search('').column(4).search('RD', true, false).draw();
                         $('#filterIndicator').addClass('active');
                         $('#filterText').text('Filtré par: ' + filterText);
                         return;
@@ -575,12 +634,37 @@ window.addEventListener('load', function() {
         $('#clearFilter').on('click', function() {
             $('.stat-card').removeClass('active');
             $('.stat-card[data-filter="all"]').addClass('active');
-            table.search('').column(5).search('').draw();
+            table.search('').column(4).search('').draw();
             $('#filterIndicator').removeClass('active');
         });
         
         // Marquer "Tous les PCs" comme actif par défaut
         $('.stat-card[data-filter="all"]').addClass('active');
+
+        // Charger le statut RustDesk Pro pour tous les PCs
+        var rustdeskIds = [];
+        $('.rustdesk-btn[data-rustdesk-id]').each(function() {
+            var id = $(this).data('rustdesk-id');
+            if (id) rustdeskIds.push(id);
+        });
+        if (rustdeskIds.length > 0) {
+            var pathDir = window.location.pathname.replace(/\/[^/]*$/, '') || '/';
+            var apiBase = pathDir.endsWith('/') ? pathDir : pathDir + '/';
+            fetch(apiBase + 'api/rustdesk_status_batch.php?ids=' + rustdeskIds.join(','))
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    $('.rustdesk-btn[data-rustdesk-id]').each(function() {
+                        var id = $(this).data('rustdesk-id');
+                        var info = data[id] || { online: false };
+                        $(this).removeClass('rustdesk-loading rustdesk-online rustdesk-offline');
+                        $(this).addClass(info.online ? 'rustdesk-online' : 'rustdesk-offline');
+                        $(this).attr('title', 'RustDesk (' + id + ') - ' + (info.online ? 'En ligne' : 'Hors ligne'));
+                    });
+                })
+                .catch(function() {
+                    $('.rustdesk-btn[data-rustdesk-id]').removeClass('rustdesk-loading').addClass('rustdesk-offline');
+                });
+        }
     });
 });
 </script> 

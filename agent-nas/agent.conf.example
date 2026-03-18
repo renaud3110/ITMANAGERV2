@@ -1,0 +1,11 @@
+# Configuration de l'agent NAS pour IT Manager
+# Copier vers agent.conf et renseigner les valeurs
+
+# URL de base d'IT Manager (sans slash final)
+API_URL="https://itmanager.example.com"
+
+# ID du NAS dans IT Manager (fiche Matériel > NAS)
+NAS_ID="1"
+
+# Cle API (config/api_config.php : API_INVENTORY_KEY)
+API_KEY="votre-cle-api-inventaire"
