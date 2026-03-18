@@ -70,7 +70,7 @@ sudo chmod -R 755 /var/www/cmdb
 ```
 
 ## Auteur
-Développé par Renaud - RGD Systems
+Développé par **Renaud GERARD** - RGD Systems
 
 ## Licence
 Propriétaire - RGD Systems 
